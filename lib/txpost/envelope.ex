@@ -90,9 +90,10 @@ defmodule Txpost.Envelope do
   """
   @spec sign(t, binary) :: t
   def sign(%__MODULE__{} = env, _private_key) do
-    env
-    |> Map.put(:pubkey, "TODO")
-    |> Map.put(:signature, "TODO")
+    IO.warn("Txpost.Envelope.sign/2 not yet implemented", [{__MODULE__, :sign, 2, []}])
+    {:ok, env}
+    #|> Map.put(:pubkey, "TODO")
+    #|> Map.put(:signature, "TODO")
   end
 
   @doc """
@@ -103,10 +104,8 @@ defmodule Txpost.Envelope do
     when is_nil(pubkey) or is_nil(sig),
     do: false
 
-  def verify(%__MODULE__{pubkey: _pubkey, signature: _sig}) do
-    # ECDSA.verify(sig, hash, pubkey)
-    false
-  end
+  def verify(%__MODULE__{payload: payload, pubkey: pubkey, signature: sig}),
+    do: :crypto.verify(:ecdsa, :sha256, payload, sig, [pubkey, :secp256k1])
 
 end
 
