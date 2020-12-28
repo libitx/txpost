@@ -12,7 +12,12 @@ defmodule Txpost.Parsers.CBORTest do
 
   def parse(conn, opts \\ []) do
     opts = Keyword.put_new(opts, :parsers, [Txpost.Parsers.CBOR])
-    Plug.Parsers.call(conn, Plug.Parsers.init(opts))
+    conn
+    |> plug(Plug.Parsers, opts)
+  end
+
+  def plug(conn, mod, opts \\ []) do
+    apply(mod, :call, [conn, apply(mod, :init, [opts])])
   end
 
 

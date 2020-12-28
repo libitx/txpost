@@ -9,7 +9,7 @@ defmodule Txpost.Envelope do
 
   @typedoc "TODO"
   @type t :: %__MODULE__{
-    payload: binary,
+    payload: Payload.t,
     pubkey: binary | nil,
     signature: binary | nil
   }
@@ -67,10 +67,21 @@ defmodule Txpost.Envelope do
   @spec encode(t) :: binary
   def encode(%__MODULE__{} = env) do
     env
+    |> to_map
+    |> CBOR.encode
+  end
+
+
+  @doc """
+  TODO
+  """
+  @spec to_map(t) :: map
+  def to_map(%__MODULE__{} = env) do
+    env
     |> Map.from_struct
     |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
     |> Enum.into(%{})
-    |> CBOR.encode
   end
 
 
@@ -97,4 +108,10 @@ defmodule Txpost.Envelope do
     false
   end
 
+end
+
+defmodule Txpost.Envelope.InvalidSignatureError do
+  @moduledoc "Error raised when Envelope signature is invalid."
+
+  defexception message: "invalid CBOR Envelope signature", plug_status: 403
 end

@@ -4,13 +4,12 @@ defmodule Txpost.Payload do
   """
   import Txpost.Utils.Params
 
-  defstruct [:data, :meta, :rawtx]
+  defstruct data: nil, meta: %{}
 
   @typedoc "TODO"
   @type t :: %__MODULE__{
-    data: map | nil,
-    meta: map | nil,
-    rawtx: binary
+    data: map | list(map),
+    meta: map
   }
 
 
@@ -20,10 +19,9 @@ defmodule Txpost.Payload do
   @spec build(map | keyword) :: {:ok, t} | {:error, String.t}
   def build(params) when is_map(params) or is_list(params) do
     params
-    |> normalize_params([:data, :meta, :rawtx])
-    |> validate_param(:data, &is_map/1, allow_blank: true)
+    |> normalize_params([:data, :meta])
+    |> validate_param(:data, &valid_data/1)
     |> validate_param(:meta, &is_map/1, allow_blank: true)
-    |> validate_param(:rawtx, &is_binary/1)
     |> case do
       {:ok, params} ->
         {:ok, struct(__MODULE__, params)}
@@ -58,7 +56,7 @@ defmodule Txpost.Payload do
   @spec encode(t) :: binary
   def encode(%__MODULE__{} = payload) do
     payload
-    |> to_map(include_nil: false)
+    |> to_map
     |> CBOR.encode
   end
 
@@ -66,31 +64,21 @@ defmodule Txpost.Payload do
   @doc """
   TODO
   """
-  @spec to_map(t, keyword) :: map
-  def to_map(%__MODULE__{} = payload, opts \\ []) do
-    include_nil = Keyword.get(opts, :include_nil, true)
+  @spec to_map(t) :: map
+  def to_map(%__MODULE__{} = payload) do
     payload
     |> Map.from_struct
-    |> put_map_or_drop_key(:data, include_nil)
-    |> put_map_or_drop_key(:meta, include_nil)
+    |> Enum.reject(fn {_k, v} -> Enum.empty?(v) end)
     |> Enum.map(fn {k, v} -> {Atom.to_string(k), v} end)
     |> Enum.into(%{})
   end
 
 
-  # Defaults the key to a map or drops the key
-  defp put_map_or_drop_key(map, key, false) do
-    case Map.get(map, key) do
-      nil -> Map.delete(map, key)
-      _ -> map
-    end
-  end
-
-  defp put_map_or_drop_key(map, key, _) do
-    case Map.get(map, key) do
-      nil -> Map.put(map, key, %{})
-      _ -> map
-    end
-  end
+  # TODO
+  defp valid_data(%{rawtx: rawtx}) when is_binary(rawtx), do: true
+  defp valid_data(%{"rawtx" => rawtx}) when is_binary(rawtx), do: true
+  defp valid_data(items) when is_list(items),
+    do: Enum.all?(items, &valid_data/1)
+  defp valid_data(_), do: false
 
 end
