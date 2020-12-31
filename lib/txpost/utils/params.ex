@@ -1,7 +1,5 @@
 defmodule Txpost.Utils.Params do
-  @moduledoc """
-  TODO
-  """
+  @moduledoc false
 
   @doc """
   Normalizes the given maps keys by converting all keys to strings, taking the
@@ -25,23 +23,24 @@ defmodule Txpost.Utils.Params do
 
 
   @doc """
-  TODO
+  Validates the parameter at the specified key, using the given validator
+  function.
   """
   @spec validate_param(map, atom, function, keyword) :: {:ok, map} | {:error, String.t}
-  def validate_param(params, key, fun, opts \\ [])
+  def validate_param(params, key, validator, opts \\ [])
 
-  def validate_param(params, key, fun, opts) when is_map(params),
-    do: validate_param({:ok, params}, key, fun, opts)
+  def validate_param(params, key, validator, opts) when is_map(params),
+    do: validate_param({:ok, params}, key, validator, opts)
 
-  def validate_param({:error, reason}, _key, _fun, _opts),
+  def validate_param({:error, reason}, _key, _validator, _opts),
     do: {:error, reason}
 
-  def validate_param({:ok, params}, key, fun, opts) do
+  def validate_param({:ok, params}, key, validator, opts) do
     val = Map.get(params, key)
     Keyword.get(opts, :allow_blank, false)
     |> case do
-      true -> is_nil(val) || apply(fun, [val])
-      _ -> apply(fun, [val])
+      true -> is_nil(val) || apply(validator, [val])
+      _ -> apply(validator, [val])
     end
     |> case do
       true -> {:ok, params}

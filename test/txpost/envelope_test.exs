@@ -2,6 +2,7 @@ defmodule Txpost.EnvelopeTest do
   use ExUnit.Case, async: true
   doctest Txpost.Envelope
 
+  @rawtx <<1, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 >>
   @payload <<
     161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0,
     0, 0, 0, 0, 0, 0, 0>>
@@ -27,6 +28,12 @@ defmodule Txpost.EnvelopeTest do
     test "builds struct when param keys are strings" do
       assert {:ok, %Txpost.Envelope{payload: @payload}} = Txpost.Envelope.build(%{"payload" => @payload})
       assert {:ok, %Txpost.Envelope{payload: @payload}} = Txpost.Envelope.build([{"payload", @payload}])
+    end
+
+    test "builds struct when payload is struct" do
+      {:ok, payload} = Txpost.Payload.build(%{data: %{"rawtx" => @rawtx}})
+      assert {:ok, %Txpost.Envelope{} = env} = Txpost.Envelope.build(%{payload: payload})
+      assert env.payload == @payload
     end
 
     test "safely ignores other keys" do

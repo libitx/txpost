@@ -1,15 +1,22 @@
 defmodule Txpost.Plug.EnvelopeRequired do
   @moduledoc """
-  TODO
+  Plug for ensuring CBOR requests are sent in a valid CBOR envolope. Implements
+  BRFC #TODO.
 
   ## Options
 
-  * `:ensure_signed` - Ensures the Envelope is signed with a valid signature
+  * `:ensure_signed` - Ensures the [`Envelope`](`t:Txpost.Envelope.t/0`) is signed with a valid signature or riases an [`InvalidSignatureError`](`Txpost.Envelope.InvalidSignatureError`). Defaults `false`.
+
+  ## Example
+
+      plug Txpost.Plug.EnvelopeRequired, ensure_signed: true
+
   """
   import Plug.Conn
   alias Txpost.{Envelope, Payload}
 
   @behaviour Plug
+
 
   @impl true
   def init(opts), do: opts
@@ -42,7 +49,6 @@ defmodule Txpost.Plug.EnvelopeRequired do
   end
 
 
-  # TODO
   defp verify_signature(env, false), do: {:ok, env}
   defp verify_signature(env, true) do
     case Envelope.verify(env) do

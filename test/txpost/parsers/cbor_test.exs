@@ -52,8 +52,8 @@ defmodule Txpost.Parsers.CBORTest do
   end
 
   test "parses the request body when it is null" do
-    conn = CBOR.encode(nil) |> cbor_conn |> parse
-    assert conn.params["_cbor"] == nil
+    conn = nil |> cbor_conn |> parse
+    assert conn.params == %{}
   end
 
   test "parses cbor-parseable content types" do

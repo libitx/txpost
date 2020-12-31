@@ -1,8 +1,23 @@
 defmodule Txpost.Parsers.CBOR do
   @moduledoc """
-  TODO
+  A `Plug.Parsers` for parsing CBOR request bodies.
+
+  CBOR documents that dont decode to maps are parsed into a `"_cbor"` key to
+  allow param merging. An empty request body is parsed as an empty map.
+
+  ## Example
+
+  Add the parser to the list of your app's parsers.
+
+      plug Plug.Parsers,
+        parsers: [
+          :json,
+          Txpost.Parsers.CBOR
+        ]
+
   """
   @behaviour Plug.Parsers
+
 
   @impl true
   def init(opts) do
@@ -24,10 +39,10 @@ defmodule Txpost.Parsers.CBOR do
     {:next, conn}
   end
 
-  # TODO
   defp decode({:ok, "", conn}, _decoder) do
     {:ok, %{}, conn}
   end
+
 
   defp decode({:ok, body, conn}, {module, fun, args}) do
     case apply(module, fun, [body | args]) do

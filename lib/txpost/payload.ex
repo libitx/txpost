@@ -1,12 +1,52 @@
 defmodule Txpost.Payload do
   @moduledoc """
-  TODO
+  Request payload module, implements BRFC #TODO.
+
+  BRFC #TODO defines a simple structure for encoding a raw Bitcoin transaction
+  alongside arbitrary data attributes and meta data in a CBOR encoded binary.
+
+  The `:data` attribute is either be a map with a single raw transaction
+  alongside any other attributes, or alternatively it can be a list of maps
+  containing multiple sets of raw transactions with additional attributes. This
+  allows multiple transactions to be encoded in a single payload.
+
+  The `:meta` attribute is a map which can contain any other arbitrary infomation
+  which can be used to help handle the request.
+
+  ## Examples
+
+  Example payload containing a single transaction.
+
+      %Txpost.Payload{
+        data: %{
+          "rawtx" => <<1, 0 ,0 ,0, ...>>,
+          "type" => "article"
+        },
+        meta: %{
+          "path" => "/posts"
+        }
+      }
+
+  Example payload containing a list of transactions.
+
+      %Txpost.Payload{
+        data: [%{
+          "rawtx" => <<1, 0 ,0 ,0, ...>>,
+          "type" => "article"
+        }, %{
+          "rawtx" => <<1, 0 ,0 ,0, ...>>,
+          "type" => "article"
+        }],
+        meta: %{
+          "path" => "/posts"
+        }
+      }
   """
   import Txpost.Utils.Params
 
   defstruct data: nil, meta: %{}
 
-  @typedoc "TODO"
+  @typedoc "CBOR Request Payload"
   @type t :: %__MODULE__{
     data: map | list(map),
     meta: map
@@ -14,7 +54,23 @@ defmodule Txpost.Payload do
 
 
   @doc """
-  TODO
+  Validates the given parameters and returns a [`Payload`](`t:t/0`) struct or
+  returns a validation error message.
+
+  Parameters can be passed as either a map or keyword list.
+
+  ## Examples
+
+      iex> Txpost.Payload.build(data: %{"rawtx" => <<1, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 >>})
+      {:ok, %Txpost.Payload{
+        data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>},
+        meta: %{}
+      }}
+
+  Returns an error when given invalid params.
+
+      iex> Txpost.Payload.build(data: "not a map")
+      {:error, "Invalid param: data"}
   """
   @spec build(map | keyword) :: {:ok, t} | {:error, String.t}
   def build(params) when is_map(params) or is_list(params) do
@@ -33,7 +89,21 @@ defmodule Txpost.Payload do
 
 
   @doc """
-  TODO
+  Decodes the given CBOR binary and returns a [`Payload`](`t:t/0`) struct or
+  returns a validation error message.
+
+  ## Examples
+
+      iex> Txpost.Payload.decode(<<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>)
+      {:ok, %Txpost.Payload{
+        data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>},
+        meta: %{}
+      }}
+
+  Returns an error when given invalid binary.
+
+      iex> Txpost.Payload.decode(<<0,1,2,3>>)
+      {:error, "Invalid payload binary"}
   """
   @spec decode(binary) :: {:ok, t} | {:error, any}
   def decode(data) when is_binary(data) do
@@ -44,14 +114,21 @@ defmodule Txpost.Payload do
       {:ok, _, _} ->
         {:error, "Invalid payload binary"}
 
-      {:error, _reason} ->
-        {:error, "Invalid payload binary"}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
 
   @doc """
-  TODO
+  Encodes the given [`Payload`](`t:t/0`) struct and returns a CBOR binary.
+
+  ## Examples
+
+      iex> Txpost.Payload.encode(%Txpost.Payload{
+      ...>   data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
+      ...> })
+      <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
   """
   @spec encode(t) :: binary
   def encode(%__MODULE__{} = payload) do
@@ -62,7 +139,17 @@ defmodule Txpost.Payload do
 
 
   @doc """
-  TODO
+  Returns the given [`Payload`](`t:t/0`) struct as a map with stringified keys.
+  The meta attribute is removed if it is an empty map.
+
+  ## Examples
+
+      iex> Txpost.Payload.to_map(%Txpost.Payload{
+      ...>   data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
+      ...> })
+      %{
+        "data" => %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
+      }
   """
   @spec to_map(t) :: map
   def to_map(%__MODULE__{} = payload) do
@@ -74,7 +161,7 @@ defmodule Txpost.Payload do
   end
 
 
-  # TODO
+  # Ensures the given value is a valid data map or list of maps.
   defp valid_data(%{rawtx: rawtx}) when is_binary(rawtx), do: true
   defp valid_data(%{"rawtx" => rawtx}) when is_binary(rawtx), do: true
   defp valid_data(items) when is_list(items),

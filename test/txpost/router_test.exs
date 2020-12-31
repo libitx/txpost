@@ -39,12 +39,12 @@ defmodule Txpost.RouterTest do
   setup do
     {:ok, p1} = Txpost.Payload.build(%{data: %{"rawtx" => @rawtx, "foo" => "bar"}, meta: %{"path" => "a"}})
     {:ok, p2} = Txpost.Payload.build(%{data: %{"rawtx" => @rawtx, "foo" => "bar"}, meta: %{"path" => "b"}})
-    %{p1: p1, p2: p2}
+    {:ok, e1} = Txpost.Envelope.build(payload: p1)
+    {:ok, e2} = Txpost.Envelope.build(payload: p2)
+    %{e1: e1, e2: e2}
   end
 
-  test "routes to correct action based on meta object", %{p1: p1, p2: p2} do
-    {:ok, e1} = Txpost.Envelope.build(payload: Txpost.Payload.encode(p1))
-    {:ok, e2} = Txpost.Envelope.build(payload: Txpost.Payload.encode(p2))
+  test "routes to correct action based on meta object", %{e1: e1, e2: e2} do
     assert %{resp_body: "A"} = cbor_conn(Txpost.Envelope.encode(e1)) |> parse
     assert %{resp_body: "B"} = cbor_conn(Txpost.Envelope.encode(e2)) |> parse
   end
