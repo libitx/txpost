@@ -1,9 +1,9 @@
 defmodule Txpost.Envelope do
   @moduledoc """
-  CBOR Envelope module, implements BRFC #TODO.
+  CBOR Envelope module, implements BRFC `5b82a2ed7b16` ([CBOR Tx Envelope](cbor-tx-envelope.md)).
 
-  BRFC #TODO defines a standard for serializing a CBOR payload in order to have
-  consistnency when signing the payload with a ECDSA keypair.
+  BRFC `5b82a2ed7b16` defines a standard for serializing a CBOR payload in order
+  to have consistnency when signing the payload with a ECDSA keypair.
 
   The `:payload` attribute is a CBOR encoded binary [`Payload`](`t:Txpost.Payload.t/0`).
 

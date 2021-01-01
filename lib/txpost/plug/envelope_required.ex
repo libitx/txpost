@@ -1,7 +1,7 @@
 defmodule Txpost.Plug.EnvelopeRequired do
   @moduledoc """
-  Plug for ensuring CBOR requests are sent in a valid CBOR envolope. Implements
-  BRFC #TODO.
+  Plug for ensuring CBOR requests are sent in a valid CBOR envolope as per BRFC
+  `5b82a2ed7b16` ([CBOR Tx Envelope](cbor-tx-envelope.md)).
 
   ## Options
 

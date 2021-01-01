@@ -1,8 +1,8 @@
 defmodule Txpost.Payload do
   @moduledoc """
-  Request payload module, implements BRFC #TODO.
+  Request payload module, implements BRFC `c9a2975b3d19` ([CBOR Tx Payload](cbor-tx-payload.md)).
 
-  BRFC #TODO defines a simple structure for encoding a raw Bitcoin transaction
+  BRFC `c9a2975b3d19` defines a simple structure for encoding a raw Bitcoin transaction
   alongside arbitrary data attributes and meta data in a CBOR encoded binary.
 
   The `:data` attribute is either be a map with a single raw transaction

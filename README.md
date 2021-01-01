@@ -4,8 +4,8 @@ Receive Bitcoin transactions over HTTP for Plug and Phoenix based applications.
 
 The following BRFCs describe a standard for serialising Bitcoin transactions and associated parameters, along with any arbitrary meta data, in a concise binary format using CBOR:
 
-* BRFC #TODO - Todo
-* BRFC #TODO - Todo
+* BRFC `c9a2975b3d19` - [CBOR Tx Payload specification](https://github.com/libitx/txpost/blob/master/brfc-specs/cbor-tx-payload.md)
+* BRFC `5b82a2ed7b16` - [CBOR Tx Envelope specification](https://github.com/libitx/txpost/blob/master/brfc-specs/cbor-tx-envelope.md)
 
 Txpost implements both BRFCs in modules following the Plug specification. In addition, Txpost provides a Router module so you can advertise a single API endpoint for recieving transactions and build your own logic for routing transactions to different controllers.
 

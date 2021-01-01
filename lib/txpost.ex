@@ -6,8 +6,8 @@ defmodule Txpost do
   and associated parameters, along with any arbitrary meta data, in a concise
   binary format using CBOR:
 
-  * BRFC #TODO - Todo
-  * BRFC #TODO - Todo
+  * BRFC `c9a2975b3d19` - [CBOR Tx Payload specification](cbor-tx-payload.md)
+  * BRFC `5b82a2ed7b16` - [CBOR Tx Envelope specification](cbor-tx-envelope.md)
 
   Txpost implements both BRFCs in modules following the Plug specification. In
   addition, Txpost provides a Router module so you can advertise a single API

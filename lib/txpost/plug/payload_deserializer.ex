@@ -1,6 +1,7 @@
 defmodule Txpost.Plug.PayloadDeserializer do
   @moduledoc """
-  Plug for flattening incoming params decoded from a CBOR request as per BRFC #TODO.
+  Plug for flattening incoming params decoded from a CBOR request as per BRFC
+  `c9a2975b3d19` ([CBOR Tx Payload](cbor-tx-payload.md)).
 
   This will only deserialize a payload when the request has a CBOR-parsable
   content type.
