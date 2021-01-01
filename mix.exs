@@ -31,6 +31,14 @@ defmodule Txpost.MixProject do
           ]
         ]
       ],
+      package: [
+        name: "txpost",
+        files: ~w(lib .formatter.exs mix.exs README.md LICENSE),
+        licenses: ["Apache-2.0"],
+        links: %{
+          "GitHub" => "https://github.com/libitx/txpost"
+        }
+      ]
     ]
   end
 

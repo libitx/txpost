@@ -82,6 +82,6 @@ For more details, refer to the [full documentation](https://hexdocs.pm/txpost).
 
 ## License
 
-Txbox is open source and released under the [Apache-2 License](https://github.com/libitx/txpost/blob/master/LICENSE.md).
+Txpost is open source and released under the [Apache-2 License](https://github.com/libitx/txpost/blob/master/LICENSE).
 
 © Copyright 2021 Chronos Labs Ltd.
