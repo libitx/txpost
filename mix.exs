@@ -4,12 +4,12 @@ defmodule Txpost.MixProject do
   def project do
     [
       app: :txpost,
-      version: "0.1.0",
+      version: "0.1.0-beta.1",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Txpost",
-      description: "TODO",
+      description: "Receive Bitcoin transactions over HTTP in a concise and efficient binary serialisation format.",
       source_url: "https://github.com/libitx/txpost",
       docs: [
         main: "Txpost",
