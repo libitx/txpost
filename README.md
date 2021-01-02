@@ -1,5 +1,9 @@
 # Txpost
 
+![Hex.pm](https://img.shields.io/hexpm/v/txpost?color=informational)
+![License](https://img.shields.io/github/license/libitx/txpost?color=informational)
+![Build Status](https://img.shields.io/github/workflow/status/libitx/txpost/Elixir%20CI)
+
 Receive Bitcoin transactions over HTTP in a concise and efficient binary serialisation format.
 
 Txpost implements a standard for encoding and decoding Bitcoin transactions and other data in a concise binary format using [CBOR](https://cbor.io). A number of modules following the Plug specification can easily be slotted in your Phoenix or Plug based application's pipeline. An optional Router module is available, allowing you to implement routing logic for different types of transactions from a single endpoint.

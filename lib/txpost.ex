@@ -1,5 +1,7 @@
 defmodule Txpost do
   @moduledoc """
+  ![License](https://img.shields.io/github/license/libitx/txpost?color=informational)
+
   Receive Bitcoin transactions over HTTP in a concise and efficient binary
   serialisation format.
 
