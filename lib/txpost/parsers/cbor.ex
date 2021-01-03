@@ -1,13 +1,13 @@
 defmodule Txpost.Parsers.CBOR do
   @moduledoc """
-  A `Plug.Parsers` for parsing CBOR request bodies.
+  A `Plug.Parsers` module for parsing CBOR request bodies.
 
   CBOR documents that dont decode to maps are parsed into a `"_cbor"` key to
   allow param merging. An empty request body is parsed as an empty map.
 
   ## Example
 
-  Add the parser to the list of your app's parsers.
+  Add the parser your app's list of parsers.
 
       plug Plug.Parsers,
         parsers: [

@@ -14,8 +14,8 @@ defmodule Txpost.MixProject do
       docs: [
         main: "Txpost",
         extras: [
-          "brfc-specs/cbor-tx-envelope.md",
-          "brfc-specs/cbor-tx-payload.md"
+          "brfc-specs/cbor-tx-payload.md",
+          "brfc-specs/cbor-tx-envelope.md"
         ],
         groups_for_extras: [
           BRFCs: ~r/brfc-specs\//,
