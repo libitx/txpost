@@ -94,7 +94,7 @@ defmodule Txpost.Payload do
 
   ## Examples
 
-      iex> Txpost.Payload.decode(<<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>)
+      iex> Txpost.Payload.decode(<<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>)
       {:ok, %Txpost.Payload{
         data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>},
         meta: %{}
@@ -109,7 +109,9 @@ defmodule Txpost.Payload do
   def decode(data) when is_binary(data) do
     case CBOR.decode(data) do
       {:ok, data, _} when is_map(data) ->
-        build(data)
+        data
+        |> untag_bytes
+        |> build
 
       {:ok, _, _} ->
         {:error, "Invalid payload binary"}
@@ -128,12 +130,13 @@ defmodule Txpost.Payload do
       iex> Txpost.Payload.encode(%Txpost.Payload{
       ...>   data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
       ...> })
-      <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+      <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
   """
   @spec encode(t) :: binary
   def encode(%__MODULE__{} = payload) do
     payload
     |> to_map
+    |> tag_bytes
     |> CBOR.encode
   end
 
@@ -167,5 +170,27 @@ defmodule Txpost.Payload do
   defp valid_data(items) when is_list(items),
     do: Enum.all?(items, &valid_data/1)
   defp valid_data(_), do: false
+
+  # Wraps known binary elements in CBOR bytes tag
+  defp tag_bytes(%{"data" => data} = payload)
+    when is_map(data) or is_list(data),
+    do: update_in(payload, ["data"], &tag_bytes/1)
+  defp tag_bytes(%{"rawtx" => rawtx} = data) when is_binary(rawtx),
+    do: Map.put(data, "rawtx", %CBOR.Tag{tag: :bytes, value: rawtx})
+  defp tag_bytes(%{"rawtx" => %CBOR.Tag{tag: :bytes, value: rawtx}} = data),
+    do: Map.put(data, "rawtx", rawtx)
+  defp tag_bytes([item | rest]),
+    do: [tag_bytes(item) | tag_bytes(rest)]
+  defp tag_bytes(data), do: data
+
+  # TODO
+  defp untag_bytes(%{"data" => data} = payload)
+    when is_map(data) or is_list(data),
+    do: update_in(payload, ["data"], &untag_bytes/1)
+  defp untag_bytes(%{"rawtx" => %CBOR.Tag{tag: :bytes, value: rawtx}} = data),
+    do: Map.put(data, "rawtx", rawtx)
+  defp untag_bytes([item | rest]),
+    do: [untag_bytes(item) | untag_bytes(rest)]
+  defp untag_bytes(data), do: data
 
 end

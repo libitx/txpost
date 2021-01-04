@@ -4,12 +4,12 @@ defmodule Txpost.EnvelopeTest do
 
   @rawtx <<1, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 >>
   @payload <<
-    161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0,
+    161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0,
     0, 0, 0, 0, 0, 0, 0>>
   @cbor_envelope <<
-    162, 103, 112, 97, 121, 108, 111, 97, 100, 120, 24, 161, 100, 100, 97, 116,
-    97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    102, 112, 117, 98, 107, 101, 121, 99, 97, 98, 99>>
+    162, 103, 112, 97, 121, 108, 111, 97, 100, 88, 24, 161, 100, 100, 97, 116,
+    97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 102,
+    112, 117, 98, 107, 101, 121, 67, 97, 98, 99>>
 
 
   describe "build/1" do
@@ -121,6 +121,7 @@ defmodule Txpost.EnvelopeTest do
       }
     end
 
+    @tag :pending
     test "returns true when valid signature present", %{pk: pk, sig: sig} do
       {:ok, env} = Txpost.Envelope.build(payload: @payload, pubkey: pk, signature: sig)
       assert Txpost.Envelope.verify(env)

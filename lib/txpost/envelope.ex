@@ -51,7 +51,7 @@ defmodule Txpost.Envelope do
       ...>   payload: %Txpost.Payload{data: %{"rawtx" => <<1, 0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 >>}}
       ...> })
       {:ok, %Txpost.Envelope{
-        payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>,
+        payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>,
         pubkey: nil,
         signature: nil
       }}
@@ -101,7 +101,9 @@ defmodule Txpost.Envelope do
   def decode(data) when is_binary(data) do
     case CBOR.decode(data) do
       {:ok, data, _} when is_map(data) ->
-        build(data)
+        data
+        |> untag_bytes
+        |> build
 
       {:ok, _, _} ->
         {:error, "Invalid payload binary"}
@@ -137,14 +139,15 @@ defmodule Txpost.Envelope do
   ## Examples
 
       iex> Txpost.Envelope.encode(%Txpost.Envelope{
-      ...>   payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+      ...>   payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
       ...> })
-      <<161, 103, 112, 97, 121, 108, 111, 97, 100, 120, 24, 161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+      <<161, 103, 112, 97, 121, 108, 111, 97, 100, 88, 24, 161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
   """
   @spec encode(t) :: binary
   def encode(%__MODULE__{} = env) do
     env
     |> to_map
+    |> tag_bytes
     |> CBOR.encode
   end
 
@@ -156,10 +159,10 @@ defmodule Txpost.Envelope do
   ## Examples
 
       iex> Txpost.Envelope.to_map(%Txpost.Envelope{
-      ...>   payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+      ...>   payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
       ...> })
       %{
-        "payload" => <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 106, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+        "payload" => <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
       }
   """
   @spec to_map(t) :: map
@@ -212,8 +215,25 @@ defmodule Txpost.Envelope do
   # Encodes the payload struct as a CBOR binary
   defp encode_payload(%{payload: %Payload{}} = params),
     do: update_in(params.payload, &Payload.encode/1)
-
   defp encode_payload(params), do: params
+
+  # TODO
+  defp tag_bytes(%{} = env),
+    do: Enum.map(env, &tag_bytes/1) |> Enum.into(%{})
+  defp tag_bytes({key, value})
+    when key in ["payload", "pubkey", "signature"]
+    and is_binary(value),
+    do: {key, %CBOR.Tag{tag: :bytes, value: value}}
+  defp tag_bytes(data), do: data
+
+  # TODO
+  defp untag_bytes(%{} = env),
+    do: Enum.map(env, &untag_bytes/1) |> Enum.into(%{})
+  defp untag_bytes({key, %CBOR.Tag{tag: :bytes, value: value}})
+    when key in ["payload", "pubkey", "signature"]
+    and is_binary(value),
+    do: {key, value}
+  defp untag_bytes(data), do: data
 
 end
 

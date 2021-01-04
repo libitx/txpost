@@ -47,10 +47,10 @@ defmodule Txpost.Parsers.CBOR do
   defp decode({:ok, body, conn}, {module, fun, args}) do
     case apply(module, fun, [body | args]) do
       {:ok, terms, _rest} when is_map(terms) ->
-        {:ok, terms, conn}
+        {:ok, normalize(terms), conn}
 
       {:ok, terms, _rest} ->
-        {:ok, %{"_cbor" => terms}, conn}
+        {:ok, %{"_cbor" => normalize(terms)}, conn}
 
       {:error, reason} ->
         raise Plug.Parsers.ParseError, exception: reason
@@ -68,5 +68,12 @@ defmodule Txpost.Parsers.CBOR do
   defp decode({:error, _}, _decoder) do
     raise Plug.BadRequestError
   end
+
+  defp normalize(%CBOR.Tag{tag: :bytes, value: value}), do: value
+  defp normalize([term | terms]), do: [normalize(term) | normalize(terms)]
+  defp normalize(%{} = terms),
+    do: Enum.map(terms, &normalize/1) |> Enum.into(%{})
+  defp normalize({key, val}), do: {key, normalize(val)}
+  defp normalize(value), do: value
 
 end
