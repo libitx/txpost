@@ -44,6 +44,7 @@ defmodule Txpost.Payload do
   """
   alias Txpost.Envelope
   import Txpost.Utils.Params
+  import Txpost.Utils.Tags
 
   defstruct data: nil, meta: %{}
 
@@ -111,7 +112,7 @@ defmodule Txpost.Payload do
     case CBOR.decode(data) do
       {:ok, data, _} when is_map(data) ->
         data
-        |> untag_bytes
+        |> detag
         |> build
 
       {:ok, _, _} ->
@@ -137,7 +138,8 @@ defmodule Txpost.Payload do
   def encode(%__MODULE__{} = payload) do
     payload
     |> to_map
-    |> tag_bytes
+    |> tag_rawtx
+    |> entag
     |> CBOR.encode
   end
 
@@ -191,25 +193,13 @@ defmodule Txpost.Payload do
   defp valid_data(_), do: false
 
   # Wraps known binary elements in CBOR bytes tag
-  defp tag_bytes(%{"data" => data} = payload)
+  defp tag_rawtx(%{"data" => data} = payload)
     when is_map(data) or is_list(data),
-    do: update_in(payload, ["data"], &tag_bytes/1)
-  defp tag_bytes(%{"rawtx" => rawtx} = data) when is_binary(rawtx),
+    do: update_in(payload, ["data"], &tag_rawtx/1)
+  defp tag_rawtx([item | rest]),
+    do: [tag_rawtx(item) | tag_rawtx(rest)]
+  defp tag_rawtx(%{"rawtx" => rawtx} = data) when is_binary(rawtx),
     do: Map.put(data, "rawtx", %CBOR.Tag{tag: :bytes, value: rawtx})
-  defp tag_bytes(%{"rawtx" => %CBOR.Tag{tag: :bytes, value: rawtx}} = data),
-    do: Map.put(data, "rawtx", rawtx)
-  defp tag_bytes([item | rest]),
-    do: [tag_bytes(item) | tag_bytes(rest)]
-  defp tag_bytes(data), do: data
-
-  # TODO
-  defp untag_bytes(%{"data" => data} = payload)
-    when is_map(data) or is_list(data),
-    do: update_in(payload, ["data"], &untag_bytes/1)
-  defp untag_bytes(%{"rawtx" => %CBOR.Tag{tag: :bytes, value: rawtx}} = data),
-    do: Map.put(data, "rawtx", rawtx)
-  defp untag_bytes([item | rest]),
-    do: [untag_bytes(item) | untag_bytes(rest)]
-  defp untag_bytes(data), do: data
+  defp tag_rawtx(data), do: data
 
 end
