@@ -42,6 +42,7 @@ defmodule Txpost.Payload do
         }
       }
   """
+  alias Txpost.Envelope
   import Txpost.Utils.Params
 
   defstruct data: nil, meta: %{}
@@ -139,6 +140,24 @@ defmodule Txpost.Payload do
     |> tag_bytes
     |> CBOR.encode
   end
+
+
+  @doc """
+  Encodes the given [`Payload`](`t:t/0`) struct as a CBOR binary and wraps it
+  within an [`Envelope`](`t:Envelopet/0`) struct.
+
+  ## Examples
+
+      iex> Txpost.Payload.encode_envelope(%Txpost.Payload{
+      ...>   data: %{"rawtx" => <<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>}
+      ...> })
+      %Txpost.Envelope{
+        payload: <<161, 100, 100, 97, 116, 97, 161, 101, 114, 97, 119, 116, 120, 74, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0>>
+      }
+  """
+  @spec encode_envelope(t) :: {:ok, Envelope.t}
+  def encode_envelope(%__MODULE__{} = payload),
+    do: struct(Envelope, payload: encode(payload))
 
 
   @doc """
