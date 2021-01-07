@@ -5,6 +5,15 @@ defmodule Txpost.Parsers.CBOR do
   CBOR documents that dont decode to maps are parsed into a `"_cbor"` key to
   allow param merging. An empty request body is parsed as an empty map.
 
+  ## Options
+
+  All options supported by `Plug.Conn.read_body/2` are also supported here. They
+  are repeated here for convenience:
+
+  * `:length` - sets the maximum number of bytes to read from the request, defaults to 8_000_000 bytes
+  * `:read_length` - sets the amount of bytes to read at one time from the underlying socket to fill the chunk, defaults to 1_000_000 bytes
+  * `:read_timeout` - sets the timeout for each socket read, defaults to 15_000ms
+
   ## Example
 
   Add the parser your app's list of parsers.
