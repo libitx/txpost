@@ -61,4 +61,20 @@ defmodule Txpost.Parsers.CBORTest do
     assert conn.params["id"] == 1
   end
 
+  test "parses mix of binary parameters" do
+    {:ok, payload} = Txpost.Payload.build(%{
+      data: %{"rawtx" => @rawtx, "utf8" => "hello world", "bin" => %CBOR.Tag{tag: :bytes, value: <<239, 63, 75, 145>>}},
+      meta: %{"foo" => "bar", "baz" => %CBOR.Tag{tag: :bytes, value: <<131, 202, 118, 182>>}}
+    })
+
+    conn = payload
+    |> Txpost.Payload.encode
+    |> cbor_conn
+    |> parse
+
+    assert conn.params["data"]["rawtx"] == @rawtx
+    assert conn.params["data"]["bin"] == <<239, 63, 75, 145>>
+    assert conn.params["meta"]["baz"] == <<131, 202, 118, 182>>
+  end
+
 end

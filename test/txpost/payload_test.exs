@@ -75,6 +75,14 @@ defmodule Txpost.PayloadTest do
   end
 
 
+  describe "encode_envelope/1" do
+    test "wraps encoded payload into en Envelope struct" do
+      {:ok, payload} = Txpost.Payload.build(data: %{"rawtx" => @rawtx})
+      assert %Txpost.Envelope{payload: @cbor_payload} = Txpost.Payload.encode_envelope(payload)
+    end
+  end
+
+
   describe "to_map/1" do
     test "returns stringified keys" do
       {:ok, payload} = Txpost.Payload.build(%{data: %{"rawtx" => @rawtx, "foo" => "bar"}, meta: %{"a" => 1}})

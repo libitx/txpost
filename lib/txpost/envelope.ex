@@ -27,6 +27,7 @@ defmodule Txpost.Envelope do
   """
   alias Txpost.Payload
   import Txpost.Utils.Params
+  import Txpost.Utils.Tags
 
   defstruct [:payload, :pubkey, :signature]
 
@@ -102,7 +103,7 @@ defmodule Txpost.Envelope do
     case CBOR.decode(data) do
       {:ok, data, _} when is_map(data) ->
         data
-        |> untag_bytes
+        |> detag
         |> build
 
       {:ok, _, _} ->
@@ -147,7 +148,7 @@ defmodule Txpost.Envelope do
   def encode(%__MODULE__{} = env) do
     env
     |> to_map
-    |> tag_bytes
+    |> entag
     |> CBOR.encode
   end
 
@@ -216,24 +217,6 @@ defmodule Txpost.Envelope do
   defp encode_payload(%{payload: %Payload{}} = params),
     do: update_in(params.payload, &Payload.encode/1)
   defp encode_payload(params), do: params
-
-  # TODO
-  defp tag_bytes(%{} = env),
-    do: Enum.map(env, &tag_bytes/1) |> Enum.into(%{})
-  defp tag_bytes({key, value})
-    when key in ["payload", "pubkey", "signature"]
-    and is_binary(value),
-    do: {key, %CBOR.Tag{tag: :bytes, value: value}}
-  defp tag_bytes(data), do: data
-
-  # TODO
-  defp untag_bytes(%{} = env),
-    do: Enum.map(env, &untag_bytes/1) |> Enum.into(%{})
-  defp untag_bytes({key, %CBOR.Tag{tag: :bytes, value: value}})
-    when key in ["payload", "pubkey", "signature"]
-    and is_binary(value),
-    do: {key, value}
-  defp untag_bytes(data), do: data
 
 end
 
